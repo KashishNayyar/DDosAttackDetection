@@ -13,7 +13,7 @@ object DdosDetector extends Serializable {
   def main(args: Array[String]): Unit = {
 
     if (args.length < 4) {
-      System.err.println("Usage: DdosDeector <zkQuorum><group> <topic> <numThreads>")
+      System.err.println("Usage: DdosDetector <zkQuorum><group> <topic> <numThreads>")
       System.exit(1)
     }
 
@@ -33,17 +33,17 @@ object DdosDetector extends Serializable {
     val v_OutputDir = sc.getConf.get("spark.DdosDetector.v_OutputDir")
 
     //v_ThresholdCnt is the maximum allowed count of requests by any IPAddress in a given timeframe.
-    val v_ThresholdCnt = sc.getConf.get("spark.DdosDetector.v_ThresholdCnt")
+    val v_ThresholdCnt = sc.getConf.get("spark.DdosDetector.v_ThresholdCnt").toInt
 
     // v_windowLength and v_SlidingInterval defines the aggregation window length and slide respectively.
-    val v_windowLength = sc.getConf.get("spark.DdosDetector.v_WindowLength")
-    val v_SlidingInterval = sc.getConf.get("spark.DdosDetector.v_SlidingInterval")
+    val v_WindowLength = sc.getConf.get("spark.DdosDetector.v_WindowLength").toInt
+    val v_SlidingInterval = sc.getConf.get("spark.DdosDetector.v_SlidingInterval").toInt
 
     ssc.checkpoint(v_CheckPointDir)
 
     try {
       // Create a receiver using createStream.
-      val messages = KafkaUtils.createStream(ssc, zkQuorum, group ,Map(topic->numThreads))
+      val messages = KafkaUtils.createStream(ssc, zkQuorum, group ,Map(topic->numThreads.toInt))
 
       //Fetch IP addresses from incoming Dstream and assign each Ip-Address a value 1.
       val ip_tokens = messages.map( input => input._2). map(lines => lines.split("\"")(0).split("- -")(0).trim).map(ip => (ip,1))
